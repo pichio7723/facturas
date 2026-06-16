@@ -1,10 +1,17 @@
 from fastapi import FastAPI
 import asyncio
 from models.cliente import clienteBase, clienteCrear, clienteEditar, cliente
+from models.productos import Producto
 from fastapi import HTTPException
 
 app = FastAPI()
 
+
+productos = [
+    Producto(id=1, nombre="Teclado", precio=120000, stock=10),
+    Producto(id=2, nombre="Mouse", precio=50000, stock=20),
+    Producto(id=3, nombre="Monitor", precio=800000, stock=5),
+]
 usuarios = []
 ultimo_id = 0
 
@@ -33,5 +40,7 @@ async def listar_todos():
             detail="No hay usuarios registrados."
         )
     return usuarios
+
+
 
 
