@@ -50,6 +50,19 @@ async def listar_todos():
     return usuarios
 
 
+@app.delete("/Udelete/{id}")
+async def borrar_usuario(id: int):
+    for U in usuarios:
+        if  U.id == id:
+            usuarios.remove(U)
+            return {"mensaje": "Usuario eliminado"}
+
+    return {"error": "Usuario no encontrado"}
+
+
+
+
+
 @app.post("/venta")
 async def venta_de_producto(venta: VentaCrear):
     global ultimo_id_factura
