@@ -13,10 +13,7 @@ async def venta_de_producto(venta: VentaCrear):
         None
     )
     if cliente is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Cliente no encontrado"
-        )
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
 
     # Buscar producto
     producto = next(
@@ -24,17 +21,11 @@ async def venta_de_producto(venta: VentaCrear):
         None
     )
     if producto is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Producto no encontrado"
-        )
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
 
     # Verificar stock
     if venta.cantidad > producto.stock:
-        raise HTTPException(
-            status_code=400,
-            detail="Stock insuficiente"
-        )
+        raise HTTPException(status_code=400, detail="Stock insuficiente")
 
     # Descontar stock y calcular subtotal
     producto.stock -= venta.cantidad
@@ -52,6 +43,7 @@ async def venta_de_producto(venta: VentaCrear):
     nueva_factura = Factura(
         id=state.ultimo_id_factura,
         cliente_id=cliente.id,
+        nombre_cliente=cliente.nombre,
         ventas=[nueva_venta],
         total=subtotal
     )
@@ -62,6 +54,12 @@ async def venta_de_producto(venta: VentaCrear):
         "factura": nueva_factura
     }
 
+@router.get("/facturas")
+async def listar_facturas():
+    if not state.facturas:
+        raise HTTPException(status_code=404, detail="No hay facturas registradas.")
+    return state.facturas
+
 @router.get("/facturas/{id}")
 async def listar_factura(id: int):
     facturas_cliente = [
@@ -69,8 +67,13 @@ async def listar_factura(id: int):
         if factura.cliente_id == id
     ]
     if not facturas_cliente:
-        raise HTTPException(
-            status_code=404,
-            detail="No se encontraron facturas para este cliente"
-        )
+        raise HTTPException(status_code=404, detail="No se encontraron facturas para este cliente")
     return facturas_cliente
+
+@router.delete("/facturas/{id}")
+async def eliminar_factura(id: int):
+    for factura in state.facturas:
+        if factura.id == id:
+            state.facturas.remove(factura)
+            return {"mensaje": "Factura eliminada"}
+    raise HTTPException(status_code=404, detail="Factura no encontrada")
