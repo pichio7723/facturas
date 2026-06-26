@@ -7,3 +7,4 @@ class Factura(BaseModel):
     nombre_cliente: str
     ventas: list[Venta]
     total: float
+    cambio: float

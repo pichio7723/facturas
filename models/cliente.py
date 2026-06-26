@@ -11,7 +11,6 @@ class clienteCrear(clienteBase):
 class clienteEditar(clienteBase):
     nombre: str | None = None
     edad: int | None = None
-    saldo: int | None = None
 
 class cliente(clienteBase):
     id : int | None = None

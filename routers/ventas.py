@@ -27,15 +27,25 @@ async def venta_de_producto(venta: VentaCrear):
     if venta.cantidad > producto.stock:
         raise HTTPException(status_code=400, detail="Stock insuficiente")
 
-    # Descontar stock y calcular subtotal
-    producto.stock -= venta.cantidad
+    # Calcular subtotal
     subtotal = producto.precio * venta.cantidad
+
+    # Verificar saldo
+    if cliente.saldo < subtotal:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Saldo insuficiente. Saldo actual: {cliente.saldo}, Total a pagar: {subtotal}"
+        )
+
+    # Descontar stock y saldo
+    producto.stock -= venta.cantidad
+    cliente.saldo -= subtotal
 
     # Crear venta
     nueva_venta = Venta(
         producto_id=producto.id,
         cantidad=venta.cantidad,
-        subtotal=subtotal
+        subtotal=subtotal #lo que el cliente gasto, es importante para no confundirse con lo que le sobra
     )
 
     # Generar factura
@@ -45,6 +55,7 @@ async def venta_de_producto(venta: VentaCrear):
         cliente_id=cliente.id,
         nombre_cliente=cliente.nombre,
         ventas=[nueva_venta],
+        cambio=cliente.saldo,
         total=subtotal
     )
 
