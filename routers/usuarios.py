@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from models.cliente import clienteCrear, cliente
+from models.cliente import clienteCrear, cliente, clienteEditar
 import state
 
 router = APIRouter()
@@ -32,6 +32,18 @@ async def borrar_usuario(id: int):
         if U.id == id:
             state.usuarios.remove(U)
             return {"mensaje": "Usuario eliminado"}
+    raise HTTPException(
+        status_code=404,
+        detail="Usuario no encontrado"
+    )
+
+@router.put("/Ueditar/{id}")
+async def editar_usuario(id: int, usuario: clienteEditar):
+    for U in state.usuarios:
+        if U.id == id:
+            for key, value in usuario.model_dump(exclude_unset=True).items():
+                    setattr(U, key, value)
+            return {"mensaje": "Usuario actualizado", "usuario": U}
     raise HTTPException(
         status_code=404,
         detail="Usuario no encontrado"
