@@ -1,17 +1,17 @@
 from fastapi import APIRouter, HTTPException
 from models.cliente import clienteCrear, cliente, clienteEditar
-import state
+import database
 
 router = APIRouter()
 
 @router.post("/usuarioCrear")
 def crear_usuario(usuario: clienteCrear):
-    state.ultimo_id += 1
+    database.ultimo_id += 1
     cliente_nuevo = cliente(
-        id=state.ultimo_id,
+        id=database.ultimo_id,
         **usuario.model_dump()
     )
-    state.usuarios.append(cliente_nuevo)
+    database.usuarios.append(cliente_nuevo)
     return {
         "mensaje": "usuario creado exitosamente",
         "usuario": cliente_nuevo
@@ -19,18 +19,18 @@ def crear_usuario(usuario: clienteCrear):
 
 @router.get("/usuarios")
 async def listar_todos():
-    if not state.usuarios:
+    if not database.usuarios:
         raise HTTPException(
             status_code=404,
             detail="No hay usuarios registrados."
         )
-    return state.usuarios
+    return database.usuarios
 
 @router.delete("/Udelete/{id}")
 async def borrar_usuario(id: int):
-    for U in state.usuarios:
+    for U in database.usuarios:
         if U.id == id:
-            state.usuarios.remove(U)
+            database.usuarios.remove(U)
             return {"mensaje": "Usuario eliminado"}
     raise HTTPException(
         status_code=404,
@@ -39,7 +39,7 @@ async def borrar_usuario(id: int):
 
 @router.put("/Ueditar/{id}")
 async def editar_usuario(id: int, usuario: clienteEditar):
-    for U in state.usuarios:
+    for U in database.usuarios:
         if U.id == id:
             for key, value in usuario.model_dump(exclude_unset=True).items():
                     setattr(U, key, value)

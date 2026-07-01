@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from models.venta import Venta, VentaCrear
 from models.factura import Factura
-import state
+import database
 
 router = APIRouter()
 
@@ -9,7 +9,7 @@ router = APIRouter()
 async def venta_de_producto(venta: VentaCrear):
     # Buscar cliente
     cliente = next(
-        (u for u in state.usuarios if u.id == venta.cliente_id),
+        (u for u in database.usuarios if u.id == venta.cliente_id),
         None
     )
     if cliente is None:
@@ -17,7 +17,7 @@ async def venta_de_producto(venta: VentaCrear):
 
     # Buscar producto
     producto = next(
-        (p for p in state.productos if p.id == venta.producto_id),
+        (p for p in database.productos if p.id == venta.producto_id),
         None
     )
     if producto is None:
@@ -49,9 +49,9 @@ async def venta_de_producto(venta: VentaCrear):
     )
 
     # Generar factura
-    state.ultimo_id_factura += 1
+    database.ultimo_id_factura += 1
     nueva_factura = Factura(
-        id=state.ultimo_id_factura,
+        id=database.ultimo_id_factura,
         cliente_id=cliente.id,
         nombre_cliente=cliente.nombre,
         ventas=[nueva_venta],
@@ -59,7 +59,7 @@ async def venta_de_producto(venta: VentaCrear):
         total=subtotal
     )
 
-    state.facturas.append(nueva_factura)
+    database.facturas.append(nueva_factura)
     return {
         "mensaje": "Compra realizada exitosamente",
         "factura": nueva_factura
@@ -67,14 +67,14 @@ async def venta_de_producto(venta: VentaCrear):
 
 @router.get("/facturas")
 async def listar_facturas():
-    if not state.facturas:
+    if not database.facturas:
         raise HTTPException(status_code=404, detail="No hay facturas registradas.")
-    return state.facturas
+    return database.facturas
 
 @router.get("/facturas/{id}")
 async def listar_factura(id: int):
     facturas_cliente = [
-        factura for factura in state.facturas
+        factura for factura in database.facturas
         if factura.cliente_id == id
     ]
     if not facturas_cliente:
@@ -83,8 +83,8 @@ async def listar_factura(id: int):
 
 @router.delete("/facturas/{id}")
 async def eliminar_factura(id: int):
-    for factura in state.facturas:
+    for factura in database.facturas:
         if factura.id == id:
-            state.facturas.remove(factura)
+            database.facturas.remove(factura)
             return {"mensaje": "Factura eliminada"}
     raise HTTPException(status_code=404, detail="Factura no encontrada")

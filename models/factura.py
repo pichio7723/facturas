@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from .venta import Venta
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 class Factura(BaseModel):
     id: int
